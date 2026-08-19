@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Contact Us | ICON Nissan</title>
   <meta name="description" content="Contact ICON Nissan in Chelmsford, MA. Chat on WhatsApp, visit us at 95 Drum Hill Rd, or get directions to our dealership." />
+  <link rel="icon" href="favicon.ico?v=20260819" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon/favicon-32x32.png?v=20260819">
+  <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon/favicon-48x48.png?v=20260819">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon/favicon-192x192.png?v=20260819">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon/apple-touch-icon.png?v=20260819">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="legal-pages.css" />
 </head>
@@ -148,7 +153,7 @@
       <div class="cp-form-card">
 
         <!-- CRM INTEGRATION: connect the form submission to the CRM webhook here -->
-        <form id="icon_nissan_lead_form" method="post" novalidate data-crm-form="icon-nissan-contact-lead">
+        <form id="icon_nissan_lead_form" name="icon_nissan_contact_form" data-crm-form="icon-nissan-contact-lead" novalidate>
 
           <!-- Hidden CRM tracking fields -->
           <input type="hidden" name="form_name" value="icon_nissan_contact" />
@@ -230,19 +235,9 @@
           <!-- Submit -->
           <button type="submit" class="cp-submit-btn">Send My Request</button>
 
-          <!-- Shown after submission until CRM is connected -->
-          <div id="form_pending_msg" class="cp-form-pending" role="alert" aria-live="polite" hidden>
-            <p class="cp-pending-text">Online form submission is being configured. Please contact our team through WhatsApp.</p>
-            <a href="https://wa.me/15553851461?text=Ol%C3%A1%21%20Vi%20um%20v%C3%ADdeo%20no%20YouTube%20e%20gostaria%20de%20agendar%20um%20test%20drive.%20%23Nissan"
-               target="_blank" rel="noopener noreferrer"
-               class="cp-pending-btn"
-               aria-label="Chat with ICON Nissan on WhatsApp">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
-                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.122 1.533 5.856L.054 23.445a.75.75 0 0 0 .918.919l5.656-1.476A11.956 11.956 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.694 9.694 0 0 1-4.944-1.353l-.355-.213-3.683.961.981-3.592-.231-.369A9.696 9.696 0 0 1 2.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/>
-              </svg>
-              Chat on WhatsApp
-            </a>
+          <!-- Success confirmation shown after valid submission -->
+          <div id="form_success_msg" class="cp-form-success" role="alert" aria-live="polite" hidden>
+            <p class="cp-success-text">Thank you! Your information has been received. Our team will contact you soon.</p>
           </div>
 
         </form>
@@ -376,16 +371,45 @@
         return;
       }
 
-      // CRM INTEGRATION: connect the form submission to the CRM webhook here
-      // When the CRM is ready, replace the block below with the webhook call.
-
-      var pendingMsg = document.getElementById('form_pending_msg');
-      if (pendingMsg) {
-        pendingMsg.hidden = false;
-        pendingMsg.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      // Disable button to prevent duplicate submissions while Sales Loop processes the event
+      var btn = form.querySelector('.cp-submit-btn');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Sending...';
       }
+
+      // Wait 1500ms for the Sales Loop external tracking to capture the submit event,
+      // then show the on-page confirmation and reset the form.
+      setTimeout(function () {
+        var successEl = document.getElementById('form_success_msg');
+        if (successEl) {
+          successEl.hidden = false;
+          successEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Send My Request';
+        }
+
+        // Reset visible fields; hidden static fields revert to their HTML defaults
+        form.reset();
+
+        // Re-populate JS-filled hidden fields that reset() cleared
+        var pageUrlField = document.getElementById('page_url');
+        if (pageUrlField) pageUrlField.value = window.location.href;
+        var utmParams = new URLSearchParams(window.location.search);
+        ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(function (key) {
+          var el = document.getElementById(key);
+          if (el) el.value = utmParams.get(key) || '';
+        });
+      }, 1500);
     });
   }());
+  </script>
+  <script
+    src="https://api.salesloopapp.com/js/external-tracking.js"
+    data-tracking-id="tk_ad8f374679f64f10ab1c08698938a57b">
   </script>
 </body>
 </html>
