@@ -2,15 +2,11 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "redirects": [
-    {
-      "source": "/",
-      "destination": "/home",
-      "permanent": true
-    },
-    {
-      "source": "/index",
-      "destination": "/home",
-      "permanent": true
-    }
+    { "source": "/", "destination": "/en/home", "permanent": false },
+    { "source": "/home", "destination": "/en/home", "permanent": false },
+    { "source": "/index", "destination": "/en/home", "permanent": false },
+    { "source": "/privacy-policy", "destination": "/en/privacy-policy", "permanent": false },
+    { "source": "/terms-of-service", "destination": "/en/terms-of-service", "permanent": false },
+    { "source": "/contact-us", "destination": "/en/contact-us", "permanent": false }
   ]
 }
